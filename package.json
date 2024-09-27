@@ -1,0 +1,17 @@
+{
+  "name": "jijenge-ai-bff",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/skillyhub/jijenge-ai-bff.git",
+  "author": "bvenceslas <bvenceslas@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "morgan": "^1.10.0",
+    "nodemon": "^3.1.7"
+  }
+}
