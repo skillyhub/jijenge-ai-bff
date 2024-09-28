@@ -3,18 +3,33 @@ const axios = require("axios");
 const moment = require("moment");
 const Groq = require("groq-sdk");
 const allTransactions = require("../mock-data/allTransactions");
+const mockCriterias = require("../mock-data/allCriterias");
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const groq = new Groq({ apiKey: GROQ_API_KEY });
 
 const analyzeWithGroq = async (transactions, phoneNumber) => {
   const prompt = `
-    For the phone number ${phoneNumber}, analyze the following transactions.
-    I want to know if the phone number was receiving at least $100 each month in the last 6 months,
-    and if after withdrawals, they have at least $70 left, assuming the maximum withdrawal is $29 per month.
-    If the conditions are met, respond with:
-    "${phoneNumber} you have done X amount of transactions within the past 6 months, you successfully received at least $100 each month, and you seem to keep at least 70% of the received amount, you are eligible for the loan of $500."
-    If the conditions are not met, provide a detailed reason why not.
+    Hello Groq,
+    You are a BUSINESS ANALYST with more than 30 YEARS OF EXPERIENCE,
+    You have been conducting successful analysis for big companies.
+    Your TASK is to ANALYZE THE BUSINESS HEALTH of our customer.
+
+    - Check all the transactions related to ${phoneNumber}, separately based on the service type (Bank, Momo) and based on these criterias ${mockCriterias}
+    - For bank, check if this user has the specified number of transactions from criterias within the past five years,
+    - Check if the computed amount he got per month is minimum of minimum Monthly Amount specified in the criteria,
+    - check if for the balance after five years is equal to the total 50% of the combination of all the minimum monthly amount to transac
+    - Check also if he has operations where he paid taxes means for the five passed years the total tax amount paid should be five times the 28% of the yearly balance computed because the regulation fixes 28% as business tax.
+    
+    If this user respect these conditions, his business health is good, and based on the ration of these conditions, calculate his business health in percentage
+    If he does not respect these conditions, calculate his business health and give it in percentage but less than 50%, and if he doesn't pay some tax per month, just let him know that his health is under 10% since he is indebted to the state
+
+    I need 3 things as your response:
+
+    1 - the ratio of his business health
+    2 - Explain the reason why he is eligible or not based on the criterias
+    3 - the suggestion of how he can adjust things based on the criterias to have his business health in good condition
+    
   `;
 
   // Use Groq AI's chat completion feature
