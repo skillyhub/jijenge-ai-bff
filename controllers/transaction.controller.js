@@ -194,6 +194,15 @@ exports.create = async (req, res) => {
   }
 };
 
+exports.findAll = async (req, res) => {
+  try {
+    const allTransactions = await Transaction.find();
+    return res.status(200).json(allTransactions);
+  } catch (error) {
+    return res.status(400).json({ error });
+  }
+};
+
 exports.findOne = async (req, res) => {
   try {
     const transaction = await Transaction.findOne({ _id: req.params.id });
