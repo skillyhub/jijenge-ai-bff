@@ -1,12 +1,14 @@
 const router = require("express").Router();
 const {
-  findAll,
+  analyzeBusiness,
+  requestLoan,
   findOne,
   create,
 } = require("../controllers/transaction.controller");
 
-router.get("/", findAll);
+router.post("/", create);
+router.post("/analyze", analyzeBusiness);
+router.post("/request-loan", requestLoan);
 router.get("/:id", findOne);
-router.post("/:id", create);
 
 module.exports = router;

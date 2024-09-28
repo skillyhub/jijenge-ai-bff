@@ -3,14 +3,10 @@ const {
   findAll,
   findOne,
   create,
-  update,
-  archive,
 } = require("../controllers/criteria.controller");
 
+router.post("/", create);
 router.get("/", findAll);
 router.get("/:id", findOne);
-router.post("/:id", create);
-router.put("/:id", update);
-router.delete("/:id", archive);
 
 module.exports = router;

@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    networks:
+      - my-network
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+
+  my-app:
+    build: .
+    container_name: my-app
+    depends_on:
+      - mongodb
+    ports:
+      - "9000:9000"
+    networks:
+      - my-network
+    environment:
+      MONGO_URL: mongodb://root:example@mongodb:27017/mydatabase?authSource=admin
+    command: npm start
+
+networks:
+  my-network:
+    driver: bridge

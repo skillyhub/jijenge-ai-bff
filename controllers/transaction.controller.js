@@ -1,43 +1,43 @@
 require("dotenv").config();
-const axios = require("axios");
 const moment = require("moment");
 const Groq = require("groq-sdk");
 const allTransactions = require("../mock-data/allTransactions");
-const mockCriterias = require("../mock-data/allCriterias");
+const Transaction = require("../models/transaction.model");
+const Criteria = require("../models/criteria.model");
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const groq = new Groq({ apiKey: GROQ_API_KEY });
+const now = moment();
+const fiveYearsAgo = now.subtract(5, "years");
 
-const analyzeWithGroq = async (transactions, phoneNumber) => {
-  const prompt = `
-    Hello Groq,
-    You are a BUSINESS ANALYST with more than 30 YEARS OF EXPERIENCE,
-    You have been conducting successful analysis for big companies.
-    Your TASK is to ANALYZE THE BUSINESS HEALTH of our customer.
+const analyzeBusiness = async (transactions, phoneNumber) => {
+  const promptAnalyze = `
 
-    - Check all the transactions related to ${phoneNumber}, separately based on the service type (Bank, Momo) and based on these criterias ${mockCriterias}
-    - For bank, check if this user has the specified number of transactions from criterias within the past five years,
-    - Check if the computed amount he got per month is minimum of minimum Monthly Amount specified in the criteria,
-    - check if for the balance after five years is equal to the total 50% of the combination of all the minimum monthly amount to transac
-    - Check also if he has operations where he paid taxes means for the five passed years the total tax amount paid should be five times the 28% of the yearly balance computed because the regulation fixes 28% as business tax.
-    
-    If this user respect these conditions, his business health is good, and based on the ration of these conditions, calculate his business health in percentage
-    If he does not respect these conditions, calculate his business health and give it in percentage but less than 50%, and if he doesn't pay some tax per month, just let him know that his health is under 10% since he is indebted to the state
+    Hello JIJENGE Ai, this will be your pseudo
+    You are a BUSINESS ANALYST with over [X] YEARS OF EXPERIENCE in helping small businesses improve their financial health. 
+    You have successfully conducted analyses for major companies.
+    Your TASK is to ANALYZE THE BUSINESS HEALTH of our customer based on the following 7 criteria:
 
-    I need 3 things as your response:
+    - 10% of overall business health: First, check if the current balance of ${phoneNumber} is greater than 0.
+    - 10% of overall business health: Next, verify if total credit transactions exceed total debit transactions.
+    - 10% of overall business health: Assess if the balance of ${phoneNumber} is greater than the average of credit transactions.
+    - 30% of overall business health: Ensure that at least 28% of the balance remains each year, as per Rwandan standards.
 
-    1 - the ratio of his business health
-    2 - Explain the reason why he is eligible or not based on the criterias
-    3 - the suggestion of how he can adjust things based on the criterias to have his business health in good condition
-    
-  `;
+    Your response should be concise and grounded in the provided ${transactions} over the past 5 years.
 
-  // Use Groq AI's chat completion feature
+    Please respond in a friendly manner, such as:
+    "Hi, I am JIJENGE Ai, your business analyst partner."
+
+    Then, outline the strengths and weaknesses of the business by presenting the percentage for each criterion based on the given weightings. Finally, provide financial advice tailored to the business, keeping in mind that all businesses are based in Rwanda.
+    Be as concise as you can while being bref as well, one simple paragraph is enough
+`;
+
+  // Use Groqs AI's chat completion feature
   const chatCompletion = await groq.chat.completions.create({
     messages: [
       {
         role: "user",
-        content: prompt,
+        content: promptAnalyze,
       },
       {
         role: "user",
@@ -50,22 +50,62 @@ const analyzeWithGroq = async (transactions, phoneNumber) => {
   return chatCompletion.choices[0]?.message?.content || "";
 };
 
-exports.findAll = async (req, res) => {
-  const now = moment();
-  const sixMonthsAgo = now.subtract(6, "months");
-  const phoneNumber = "+250790183836";
+const analyzeLoan = async (transactions, criterias, phoneNumber, amount) => {
+  const promptLoan = `
+  Hello JIJENGE AI,
+  
+  You are an advanced financial analysis tool designed to assist users in evaluating their financial health and making informed decisions. Your primary goal is to analyze user transactions and provide personalized recommendations for financial institutions based on their transaction history.
+  
+  When a user submits their ${phoneNumber} and the desired loan ${amount}, your tasks are as follows:
+  always remember that we in Rwanda so you have have to stay in the context while suggesting or reporting. 
+  1. Retrieve Transaction Data: Fetch the user's transaction history from the database, focusing on the number of transactions and the minimum monthly amounts.
+  
+  2. Analyze Transaction Patterns: Assess the user’s ${transactions} data against predefined criteria for financial institutions, which include: ${criterias}
+  
+     You will check the user's transaction data against this criteria array to determine eligibility.
+  
+  3. Evaluate Loan Request: Consider the desired loan amount in relation to the user's financial health and transaction history. Provide feedback on whether the requested amount seems reasonable based on their financial activity.
+  
+  4. Generate Recommendations: Provide concise suggestions based on the analysis, highlighting suitable financial services the user may consider for their loan request within the context of Rwanda.
+  
+  Your response should be friendly and engaging, such as:
+  "Hi, I am JIJENGE AI, your financial analysis partner! Based on your transaction history and the loan amount you wish to request, here are some financial institutions that might suit your needs."
+  
+  Conclude with tailored recommendations, ensuring users feel supported in their financial journey.Be as concise as you can while being bref as well, one simple paragraph is enough
+  `;
 
-  // 1. Fetch transactions from the backend (replace with your actual backend URL)
-  // const response = await axios.get(
-  //   "https://jsonplaceholder.typicode.com/posts"
-  // );
-  // const transactions = response.data;
+  // Use Groq AI's chat completion feature
+  const chatCompletion = await groq.chat.completions.create({
+    messages: [
+      {
+        role: "user",
+        content: promptLoan,
+      },
+      {
+        role: "user",
+        content: `Transactions data: ${JSON.stringify(transactions)}`,
+      },
+    ],
+    model: "llama3-8b-8192", // You can use any available model
+  });
 
-  // 2. Filter transactions for the specific phone number within the past 6 months
+  return chatCompletion.choices[0]?.message?.content || "";
+};
+
+exports.analyzeBusiness = async (req, res) => {
+  const { phoneNumber } = req.body;
+
+  if (!phoneNumber) {
+    return res.status(400).send({ message: "Phone number was not provided" });
+  }
+
+  // check if the phone number exists TODO:
+
+  // 1. Filter transactions for the specific phone number within the past 6 months
   const filteredTransactions = allTransactions.filter((transaction) => {
     return (
       transaction.phoneNumber === phoneNumber &&
-      moment(transaction.date).isAfter(sixMonthsAgo)
+      moment(transaction.date).isAfter(fiveYearsAgo)
     );
   });
 
@@ -75,20 +115,93 @@ exports.findAll = async (req, res) => {
     });
   }
 
-  // 3. Analyze the transactions using Groq AI
-  const analysisResult = await analyzeWithGroq(
+  // 2. Analyze the transactions using Groq AI
+  const analysisResult = await analyzeBusiness(
     filteredTransactions,
     phoneNumber
   );
 
-  // 4. Return the result from Groq AI
+  // 3. Return the result from Groq AI
   res.status(200).json({ analysis: analysisResult });
 };
 
-exports.findOne = async (req, res) => {
-  res.status(200).json({ msg: "find one transaction" });
+exports.requestLoan = async (req, res) => {
+  const { phoneNumber, amount } = req.body;
+
+  if (!phoneNumber) {
+    return res.status(400).send({ message: "Phone number was not provided" });
+  }
+  if (!amount) {
+    return res
+      .status(400)
+      .send({ message: "Can't request loan without specifying the amount" });
+  }
+
+  // check if the phone number exists TODO:
+
+  const allCriterias = await Criteria.find();
+
+  // 1. Filter transactions for the specific phone number within the past 6 months
+  const filteredTransactions = allTransactions.filter((transaction) => {
+    return (
+      transaction.phoneNumber === phoneNumber &&
+      moment(transaction.date).isAfter(fiveYearsAgo)
+    );
+  });
+
+  if (filteredTransactions.length === 0) {
+    return res.status(200).json({
+      msg: "No transactions found for this phone number within the last 6 months.",
+    });
+  }
+
+  // 2. Analyze the transactions using Groq AI
+  const analysisResult = await analyzeLoan(
+    filteredTransactions,
+    allCriterias,
+    phoneNumber,
+    amount
+  );
+
+  // 3. Return the result from Groq AI
+  res.status(200).json({ analysis: analysisResult });
 };
 
 exports.create = async (req, res) => {
-  res.status(200).json({ msg: "transaction created" });
+  try {
+    // Extract transaction details from the request body
+    const { amount, type, balance } = req.body;
+
+    // Adjust the balance based on the type of transaction
+    let updatedBalance = balance || 0;
+
+    if (type === "CREDIT") {
+      updatedBalance += amount; // Add the amount for CREDIT transactions
+    } else if (type === "DEBIT" || type === "TAX") {
+      updatedBalance -= amount; // Subtract the amount for DEBIT/TAX transactions
+    }
+
+    const newTransaction = new Transaction({
+      ...req.body,
+      balance: updatedBalance,
+    });
+
+    const savedTransaction = await newTransaction.save();
+
+    return res.status(201).json(savedTransaction);
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+exports.findOne = async (req, res) => {
+  try {
+    const transaction = await Transaction.findOne({ _id: req.params.id });
+    if (!transaction)
+      return res.status(404).json("Cette transaction n'existe pas !");
+
+    return res.status(200).json(transaction);
+  } catch (error) {
+    return res.status(400).json({ error });
+  }
 };
