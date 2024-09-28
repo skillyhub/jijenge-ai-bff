@@ -1,5 +1,15 @@
+const axios = require("axios");
+
 exports.findAll = async (req, res) => {
-  res.status(200).json({ msg: "find all products" });
+  try {
+    const response = await axios.get(
+      "https://jsonplaceholder.typicode.com/posts"
+    );
+
+    res.status(200).json(response.data);
+  } catch (error) {
+    res.status(400).json({ msg: `error finding products: ${error.message}` });
+  }
 };
 
 exports.findOne = async (req, res) => {

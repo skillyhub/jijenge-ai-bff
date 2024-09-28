@@ -1,9 +1,13 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
+const morgan = require("morgan");
+const cors = require("cors");
 
 // ------- middlewares
 app.use(express.json());
+app.use(morgan("dev"));
+app.use(cors("*"));
 
 // ------- routes
 const productRoutes = require("./routes/product.routes");
