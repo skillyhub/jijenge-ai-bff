@@ -3,8 +3,6 @@ const {
   findAll,
   findOne,
   create,
-  update,
-  archive,
 } = require("../controllers/transaction.controller");
 
 router.get("/", findAll);
