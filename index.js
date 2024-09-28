@@ -10,18 +10,14 @@ app.use(morgan("dev"));
 app.use(cors("*"));
 
 // ------- routes
-const productRoutes = require("./routes/product.routes");
 const criteriaRoutes = require("./routes/criteria.routes");
 const transactionRoutes = require("./routes/transaction.routes");
-const suggestionRoutes = require("./routes/suggestion.routes");
-const financeRoutes = require("./routes/finance.routes");
+const recommendationRoutes = require("./routes/recommendation.routes");
 
 // ------- app routes
-app.use("/bff/products", productRoutes);
 app.use("/bff/criterias", criteriaRoutes);
 app.use("/bff/transactions", transactionRoutes);
-app.use("/bff/suggestions", suggestionRoutes);
-app.use("/bff/finances", financeRoutes);
+app.use("/bff/recommendations", recommendationRoutes);
 
 // ------- port number
 const PORT = process.env.PORT || 3333;
