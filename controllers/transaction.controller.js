@@ -1,7 +1,7 @@
 require("dotenv").config();
 const moment = require("moment");
 const Groq = require("groq-sdk");
-const allTransactions = require("../mock-data/allTransactions");
+
 const Transaction = require("../models/transaction.model");
 const Criteria = require("../models/criteria.model");
 
