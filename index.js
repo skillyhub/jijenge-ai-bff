@@ -13,12 +13,10 @@ app.use(cors("*"));
 // ------- routes
 const criteriaRoutes = require("./routes/criteria.routes");
 const transactionRoutes = require("./routes/transaction.routes");
-const recommendationRoutes = require("./routes/recommendation.routes");
 
 // ------- app routes
 app.use("/criterias", criteriaRoutes);
 app.use("/transactions", transactionRoutes);
-app.use("/recommendations", recommendationRoutes);
 
 // ------- port number
 const PORT = process.env.PORT || 9000;

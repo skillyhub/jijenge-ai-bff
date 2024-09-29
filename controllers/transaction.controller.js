@@ -151,7 +151,7 @@ exports.requestLoan = async (req, res) => {
 
   if (filteredTransactions.length === 0) {
     return res.status(200).json({
-      msg: "No transactions found for this phone number within the last 6 months.",
+      msg: "No transactions found for this phone number within the last 5 years.",
     });
   }
 
